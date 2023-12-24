@@ -2,7 +2,7 @@
 #include "mathlib.h"
 
 real f(real x) {
-  return x;
+  return x*x*x;
 }
 
 real reciprocal(real x) {
@@ -19,6 +19,8 @@ int main() {
   } else {
     printf("Limit of 0/x as x approaches 0 = %lf\n", limit);
   }
+
+  printf("Integral from 0 to 2 of x^3 = %lf\n", integral(f, 0, 2));
 
   return 0;
 }

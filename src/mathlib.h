@@ -1,5 +1,13 @@
+/* Default number of iterations in an integral is 1,000,000.
+ * To change this, define INTEGRAL_ITERATIONS as the desired number of iterations before including this file.
+ */
+
 #ifndef MATHLIB_H
 #define MATHLIB_H
+
+#ifndef INTEGRAL_ITERATIONS
+  #define INTEGRAL_ITERATIONS 1000000
+#endif // INTEGRAL_ITERATIONS
 
 // Taken from math.h -> Used to prevent any overhead from library such as trig functions.
 /////////////////////////////////////////////////////////////////////////
@@ -81,11 +89,30 @@ MLDEF real lim(function f, real approach) {
   return fh;
 }
 
+// Approximates a derivative at point x.
 MLDEF real derivative(function f, real x) {
   real fx = CALL(f, x);
   real fh = CALL(f, x + SMALL);
 
   return (fh - fx)/(SMALL);
+}
+
+// Approximates a definite integral from a to b using the trapezium rule. 
+MLDEF real integral(function f, real a, real b) {
+  real area = 0;
+  real x = a;
+
+  real n = INTEGRAL_ITERATIONS;
+  real step = (b - a)/n;
+
+  while(x < b) {
+    real x1 = x + step;
+    area += CALL(f, x) + CALL(f, x1);
+
+    x = x1;
+  }
+
+  return area * (step/2);
 }
 
 #endif // MATHLIB_H
