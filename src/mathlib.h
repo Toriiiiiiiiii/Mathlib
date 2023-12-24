@@ -9,6 +9,10 @@
   #define INTEGRAL_ITERATIONS 1000000
 #endif // INTEGRAL_ITERATIONS
 
+#ifndef TAYLOR_ITERATIONS
+  #define TAYLOR_ITERATIONS 17
+#endif // TAYLOR_ITERATIONS
+
 // Taken from math.h -> Used to prevent any overhead from library such as trig functions.
 /////////////////////////////////////////////////////////////////////////
 #ifndef _HUGE_ENUF
@@ -34,11 +38,13 @@
 #define ISNAN(x) (x != x)? 1 : 0
 #define CALL(f, x) (*f)(x)
 
-typedef double real;
-typedef int integer;
-typedef unsigned int natural;
+typedef long double real;
+typedef long int integer;
+typedef unsigned long int natural;
 
 typedef real (*function)(real n);
+
+const real pi = 22.0 / 7.0;
 
 // Function that simply returns the input.
 MLDEF real constant(real x) {return x;}
@@ -74,7 +80,7 @@ MLDEF natural fact(natural n) {
 
 // Uses discrete_product to calculate the factorial of a natural number.
 MLDEF natural fact_norecurse(natural n) {
-  return discrete_product(constant, 1, n, 1);
+  return discrete_product(constant, 1, n+1, 1);
 }
 
 // Gives the limit of a function as it approaches a value. Returns NAN if the limit is undefined.
@@ -113,6 +119,44 @@ MLDEF real integral(function f, real a, real b) {
   }
 
   return area * (step/2);
+}
+
+MLDEF real power(real x, natural n) {
+  real result = 1;
+  for(natural i = 0; i < n; ++i) {
+    result *= x;
+  }
+
+  return result;
+}
+
+MLDEF real degrees_to_radians(real theta) {
+  return theta * (pi / 180.0);
+}
+
+MLDEF real cos_saa(real theta) {
+  return 1 - ((theta * theta) / 2);
+}
+
+MLDEF real sin_saa(real theta) {
+  return theta;
+}
+
+MLDEF real tan_saa(real theta) {
+  return theta;
+}
+
+MLDEF real ml_sin(real theta) {
+  if(theta < 0.2 && theta > -0.2) return sin_saa(theta);
+
+  real result = 0;
+  for(natural n = 0; n < TAYLOR_ITERATIONS; ++n) {
+    natural n2 = 2*n + 1;
+
+    result += power(-1.0, n) * (power(theta, n2)/(real)fact_norecurse(n2));
+  }
+
+  return result;
 }
 
 #endif // MATHLIB_H

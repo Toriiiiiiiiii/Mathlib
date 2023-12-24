@@ -10,17 +10,11 @@ real reciprocal(real x) {
 }
 
 int main() {
-  real limit = lim(reciprocal, 0);
+  printf("10! = %lu (%lu)\n", fact(10), fact_norecurse(10));
 
-  if(ISINF(limit)) {
-    printf("Limit of 0/x as x approaches 0 = infinity\n");
-  } else if(ISNAN(limit)) {
-    printf("The limit of 0/x as x approaches 0 is not defined.\n");
-  } else {
-    printf("Limit of 0/x as x approaches 0 = %lf\n", limit);
+  for(natural theta = 0; theta < 360; theta += 45) {
+    printf("sin(%lu) = %Lf\n", theta, ml_sin( degrees_to_radians((real)theta) ));
   }
-
-  printf("Integral from 0 to 2 of x^3 = %lf\n", integral(f, 0, 2));
 
   return 0;
 }
