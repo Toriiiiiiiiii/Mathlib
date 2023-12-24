@@ -9,9 +9,17 @@
   #define INTEGRAL_ITERATIONS 1000000
 #endif // INTEGRAL_ITERATIONS
 
-#ifndef TAYLOR_ITERATIONS
-  #define TAYLOR_ITERATIONS 33
+#ifndef SIN_ITERATIONS
+  #define SIN_ITERATIONS 4
 #endif // TAYLOR_ITERATIONS
+
+#ifndef LN_ITERATIONS
+  #define LN_ITERATIONS 1000
+#endif
+
+#ifndef EXP_ITERATIONS
+  #define EXP_ITERATIONS 50
+#endif
 
 // Taken from math.h -> Used to prevent any overhead from library such as trig functions.
 /////////////////////////////////////////////////////////////////////////
@@ -44,7 +52,17 @@ typedef unsigned long int natural;
 
 typedef real (*function)(real n);
 
+MLDEF real power(real x, natural n) {
+  real result = 1;
+  for(natural i = 0; i < n; ++i) {
+    result *= x;
+  }
+
+  return result;
+}
+
 const real pi = 22.0 / 7.0;
+const real e = 2.7182818284590452354;
 
 // Function that simply returns the input.
 MLDEF real constant(real x) {return x;}
@@ -136,15 +154,6 @@ MLDEF real integral(function f, real a, real b) {
   return area * (step/2);
 }
 
-MLDEF real power(real x, natural n) {
-  real result = 1;
-  for(natural i = 0; i < n; ++i) {
-    result *= x;
-  }
-
-  return result;
-}
-
 MLDEF real degrees_to_radians(real theta) {
   return theta * (pi / 180.0);
 }
@@ -165,7 +174,7 @@ MLDEF real ml_sin(real theta) {
   if(theta < 0.2 && theta > -0.2) return theta;
 
   real result = 0;
-  for(natural n = 0; n < TAYLOR_ITERATIONS; ++n) {
+  for(natural n = 0; n < SIN_ITERATIONS; ++n) {
     natural n2 = (2*n) + 1;
 
     result += power(-1.0, n) * (power(theta, n2)/(real)fact_norecurse(n2));
@@ -180,6 +189,30 @@ MLDEF real ml_cos(real theta) {
 
 MLDEF real ml_tan(real theta) {
   return ml_sin(theta) / ml_cos(theta);
+}
+
+MLDEF real ml_ln(real x) {
+  real result = 0;
+
+  for(natural n = 1; n < LN_ITERATIONS; ++n) {
+    result += power((x-1)/(x+1), 2*n-1)/(2*n-1);
+  }
+
+  return 2*result;
+}
+
+MLDEF real ml_exp(real x) {
+  real result = 0;
+
+  for(natural n = 0; n < EXP_ITERATIONS; ++n) {
+    result += power(x, n) / (real)fact_norecurse(n);
+  }
+
+  return result;
+}
+
+MLDEF real pow_exp(real base, real exponent) {
+  return ml_exp( ml_ln(base) * exponent ); // a^b = e^(ln(a) * b)
 }
 
 #endif // MATHLIB_H
