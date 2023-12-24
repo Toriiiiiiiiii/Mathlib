@@ -10,7 +10,7 @@
 #endif // INTEGRAL_ITERATIONS
 
 #ifndef TAYLOR_ITERATIONS
-  #define TAYLOR_ITERATIONS 17
+  #define TAYLOR_ITERATIONS 33
 #endif // TAYLOR_ITERATIONS
 
 // Taken from math.h -> Used to prevent any overhead from library such as trig functions.
@@ -49,6 +49,15 @@ const real pi = 22.0 / 7.0;
 // Function that simply returns the input.
 MLDEF real constant(real x) {return x;}
 
+MLDEF real ml_abs(real x) {return (x >= 0)? x : (x*-1);}
+
+MLDEF real ml_floor(real x) { return (real)((natural)x); }
+MLDEF real ml_ceil(real x) { 
+  real fractionalPart = x - ml_floor(x);
+
+  return (fractionalPart == 0)? x : (ml_floor(x)+1);
+}
+
 // Performs a discrete summation on a function -> Equivalent to Capital Sigma.
 MLDEF real discrete_sum( function f, real start, real end, real step ) {
   real sum = 0;
@@ -80,7 +89,13 @@ MLDEF natural fact(natural n) {
 
 // Uses discrete_product to calculate the factorial of a natural number.
 MLDEF natural fact_norecurse(natural n) {
-  return discrete_product(constant, 1, n+1, 1);
+  natural result = 1;
+
+  for(int x = 1; x < n+1; ++x) {
+    result *= x;
+  }
+
+  return result;
 }
 
 // Gives the limit of a function as it approaches a value. Returns NAN if the limit is undefined.
@@ -134,29 +149,37 @@ MLDEF real degrees_to_radians(real theta) {
   return theta * (pi / 180.0);
 }
 
-MLDEF real cos_saa(real theta) {
-  return 1 - ((theta * theta) / 2);
-}
-
-MLDEF real sin_saa(real theta) {
-  return theta;
-}
-
-MLDEF real tan_saa(real theta) {
-  return theta;
-}
-
 MLDEF real ml_sin(real theta) {
-  if(theta < 0.2 && theta > -0.2) return sin_saa(theta);
+  if(theta < 0) return -ml_sin( ml_abs(theta) );
+
+  if(theta > pi/2) {
+    natural period = ml_ceil( theta / pi );
+
+    if(period % 2 == 0) {
+      return -ml_sin( pi*period - theta );
+    } else {
+      return ml_sin( pi * period - theta );
+    }
+  }
+
+  if(theta < 0.2 && theta > -0.2) return theta;
 
   real result = 0;
   for(natural n = 0; n < TAYLOR_ITERATIONS; ++n) {
-    natural n2 = 2*n + 1;
+    natural n2 = (2*n) + 1;
 
     result += power(-1.0, n) * (power(theta, n2)/(real)fact_norecurse(n2));
   }
 
   return result;
+}
+
+MLDEF real ml_cos(real theta) {
+  return -ml_sin( theta - pi/2 );
+}
+
+MLDEF real ml_tan(real theta) {
+  return ml_sin(theta) / ml_cos(theta);
 }
 
 #endif // MATHLIB_H
