@@ -1,5 +1,12 @@
-/* Default number of iterations in an integral is 1,000,000.
- * To change this, define INTEGRAL_ITERATIONS as the desired number of iterations before including this file.
+/* The following values can be changed for performance or accuracy purposes:
+ *  - INTEGRAL_ITERATIONS
+ *  - SIN_ITERATIONS
+ *  - LN_ITERATIONS
+ *  - EXP_ITERATIONS
+ *
+ *  Note: Setting some of these values too high can result in related functions returning NAN or INFINITY due to accuracy issues.
+ *  Changing these values waives your right to complain about performance.
+ *  To change these values, define them BEFORE including this header file.
  */
 
 #ifndef MATHLIB_H
@@ -11,15 +18,15 @@
 
 #ifndef SIN_ITERATIONS
   #define SIN_ITERATIONS 4
-#endif // TAYLOR_ITERATIONS
+#endif // SIN_ITERATIONS
 
 #ifndef LN_ITERATIONS
   #define LN_ITERATIONS 1000
-#endif
+#endif // LN_ITERATIONS
 
 #ifndef EXP_ITERATIONS
   #define EXP_ITERATIONS 50
-#endif
+#endif // EXP_ITERATIONS
 
 // Taken from math.h -> Used to prevent any overhead from library such as trig functions.
 /////////////////////////////////////////////////////////////////////////
