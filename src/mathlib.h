@@ -28,6 +28,17 @@
   #define EXP_ITERATIONS 50
 #endif // EXP_ITERATIONS
 
+#ifndef ARCSIN_ITERATIONS
+  #define ARCSIN_ITERATIONS 33
+#endif // ARCSIN_ITERATIONS
+
+#ifndef ARCTAN_ITERATIONS
+  #define ARCTAN_ITERATIONS 500
+#endif // ARCTAN_ITERATIONS
+
+// Included ONLY for malloc(), realloc() and free().
+#include <stdlib.h>
+
 // Taken from math.h -> Used to prevent any overhead from library such as trig functions.
 /////////////////////////////////////////////////////////////////////////
 #ifndef _HUGE_ENUF
@@ -59,6 +70,8 @@ typedef unsigned long int natural;
 
 typedef real (*function)(real n);
 
+// Used for natural exponents. (positive integers or 0 ONLY.)
+// For other real exponents, use pow_exp.
 MLDEF real power(real x, natural n) {
   real result = 1;
   for(natural i = 0; i < n; ++i) {
@@ -220,6 +233,7 @@ MLDEF real ml_ln(real x) {
   return 2*result;
 }
 
+// General logarithm -> loga(x)
 MLDEF real ml_log(real base, real x) {
   return ml_ln(x) / ml_ln(base); // logb(x) = ln(x)/ln(b)
 }
@@ -276,5 +290,107 @@ MLDEF real binomialMedian(natural n, real p) { return ml_floor( binomialMean(n, 
 MLDEF real binomialMode(natural n, real p) { return ml_floor( binomialMean(n+1, p) ); }
 MLDEF real binomialVariance(natural n, real p) { return (real)n * p * (1-p); }
 MLDEF real binomialStandardDeviation(natural n, real p) { return ml_sqrt( binomialVariance(n, p) ); }
+
+MLDEF real arcsin(real x) {
+  real sum = 0;
+
+  for(natural n = 0; n < ARCSIN_ITERATIONS; ++n) {
+    sum += ((real)fact(2*n) / (power(2.0, 2*n)*power((real)fact(2*n), 2))) * (power(x, 2*n+1)/(real)(2*n+1));
+  }
+
+  return sum;
+}
+
+MLDEF real arccos(real x) {
+  return pi/2 - arcsin(x);
+}
+
+MLDEF real arctan(real x) {
+  real sum = 0;
+
+  if(x <= -1) {    
+    for(natural n = 0; n < ARCTAN_ITERATIONS; ++n) {
+      sum += power(-1, n) * (1/((2*n+1) * power(x, 2*n+1)));
+    }
+
+    sum = -pi/2 - sum;
+  } else if(x <= 1) {
+    for(natural n = 0; n < ARCTAN_ITERATIONS; ++n) {
+      sum += power(-1, n) * (power(x, 2*n + 1)/(2*n+1));
+    }
+  } else {
+    for(natural n = 0; n < ARCTAN_ITERATIONS; ++n) {
+      sum += power(-1, n) * (1/((2*n+1) * power(x, 2*n+1)));
+    }
+
+    sum = pi/2 - sum;
+  }
+  
+  return sum;
+}
+
+struct _complex {
+  real realPart;
+  real imaginaryPart;
+};
+
+typedef struct _complex complex;
+
+MLDEF real argument(complex z) {
+  return arctan(z.imaginaryPart / z.realPart);
+}
+
+MLDEF real modulus(complex z) {
+  return ml_sqrt(z.realPart*z.realPart + z.imaginaryPart * z.imaginaryPart);
+}
+
+MLDEF complex conjugate(complex z) {
+  return (complex) {
+    .realPart = z.realPart,
+    .imaginaryPart = -z.imaginaryPart
+  };
+}
+
+MLDEF complex complex_sqrt(real x) {
+  if(x < 0) {
+    return (complex) {
+      .realPart = 0,
+      .imaginaryPart = ml_sqrt( ml_abs(x) ) 
+    };
+  } else {
+    return (complex) {
+      .realPart = ml_sqrt(x),
+      .imaginaryPart = 0
+    };
+  }
+}
+
+MLDEF complex complex_add(complex a, complex b) {
+  return (complex) {
+    .realPart = a.realPart + b.realPart,
+    .imaginaryPart = a.imaginaryPart + b.imaginaryPart
+  };
+}
+
+MLDEF complex complex_sub(complex a, complex b) {
+  return (complex) {
+    .realPart = a.realPart - b.realPart,
+    .imaginaryPart = a.imaginaryPart - b.imaginaryPart
+  };
+}
+
+MLDEF complex complex_mul(complex a, complex b) {
+  return (complex) {
+    .realPart = a.realPart * b.realPart - a.imaginaryPart * b.imaginaryPart,
+    .imaginaryPart = a.realPart * b.imaginaryPart + b.realPart * a.imaginaryPart
+  };
+}
+
+MLDEF complex complex_div(complex a, complex b) {
+  return (complex) {
+    .realPart = (a.realPart * b.realPart + a.imaginaryPart * b.imaginaryPart)/(b.realPart * b.realPart + b.imaginaryPart * b.imaginaryPart),
+    .imaginaryPart = (b.realPart * a.imaginaryPart - a.realPart * b.imaginaryPart)/(b.realPart * b.realPart + b.imaginaryPart * b.imaginaryPart)
+  };
+}
 
 #endif // MATHLIB_H
