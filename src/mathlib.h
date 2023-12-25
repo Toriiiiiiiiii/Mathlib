@@ -154,13 +154,22 @@ MLDEF real integral(function f, real a, real b) {
   return area * (step/2);
 }
 
+// Converts degrees to radians
 MLDEF real degrees_to_radians(real theta) {
   return theta * (pi / 180.0);
 }
 
+// Converts degrees to radians
+MLDEF real radians_to_degrees(real theta) {
+  return theta / (pi / 180.0);
+}
+
+// Sine trigonometric function.
 MLDEF real ml_sin(real theta) {
   if(theta < 0) return -ml_sin( ml_abs(theta) );
 
+  // For optimisation and accuracy purposes, we should only calculate values of theta for the range 0 - pi/2.
+  // This allows for the number of iterations to be significantly reduced, and also improves the speed of the calculations.
   if(theta > pi/2) {
     natural period = ml_ceil( theta / pi );
 
@@ -183,14 +192,17 @@ MLDEF real ml_sin(real theta) {
   return result;
 }
 
+// Cosine trigonometric function -> equivalent to -sin(x - pi/2)
 MLDEF real ml_cos(real theta) {
   return -ml_sin( theta - pi/2 );
 }
 
+// Tanjent trigonometric function -> equivalent to sin(x)/cos(x)
 MLDEF real ml_tan(real theta) {
   return ml_sin(theta) / ml_cos(theta);
 }
 
+// Natural logarithm -- logarithm with base e
 MLDEF real ml_ln(real x) {
   real result = 0;
 
@@ -201,6 +213,11 @@ MLDEF real ml_ln(real x) {
   return 2*result;
 }
 
+MLDEF real ml_log(real base, real x) {
+  return ml_ln(x) / ml_ln(base); // logb(x) = ln(x)/ln(b)
+}
+
+// Exponential function -- e^x
 MLDEF real ml_exp(real x) {
   real result = 0;
 
@@ -211,8 +228,14 @@ MLDEF real ml_exp(real x) {
   return result;
 }
 
+// Used for exponential a^b -- allows for fractional and negative powers.
 MLDEF real pow_exp(real base, real exponent) {
   return ml_exp( ml_ln(base) * exponent ); // a^b = e^(ln(a) * b)
+}
+
+// Gives an approximate square root of a number.
+MLDEF real ml_sqrt(real x) {
+  return pow_exp(x, 0.5);
 }
 
 #endif // MATHLIB_H
