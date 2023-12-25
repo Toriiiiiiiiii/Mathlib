@@ -238,4 +238,36 @@ MLDEF real ml_sqrt(real x) {
   return pow_exp(x, 0.5);
 }
 
+// Combinations formula
+MLDEF natural nCr(natural n, natural r) {
+  return fact(n) / (fact(r) * fact(n-r));
+}
+
+// Permutations formula
+MLDEF natural nPr(natural n, natural r) {
+  return fact(n) / fact(n-r);
+}
+
+// P(X=r) where X~B(n,p)
+MLDEF real binomialProbability(natural n, natural r, real p) {
+  return nCr(n, r) * power(p, r) * power(1-p, n-r);
+}
+
+// P(X<=r) where X~B(n,p)
+MLDEF real binomialCumulativeProbability(natural n, natural r, real p) {
+  real sum = 0;
+
+  for(natural k = 0; k <= r; ++k) {
+    sum += binomialProbability(n, k, p);
+  }
+
+  return sum;
+}
+
+MLDEF real binomialMean(natural n, real p) { return (real)n * p; }
+MLDEF real binomialMedian(natural n, real p) { return ml_floor( binomialMean(n, p) ); }
+MLDEF real binomialMode(natural n, real p) { return ml_floor( binomialMean(n+1, p) ); }
+MLDEF real binomialVariance(natural n, real p) { return (real)n * p * (1-p); }
+MLDEF real binomialStandardDeviation(natural n, real p) { return ml_sqrt( binomialVariance(n, p) ); }
+
 #endif // MATHLIB_H
