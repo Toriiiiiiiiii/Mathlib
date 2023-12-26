@@ -16,5 +16,6 @@
 #include "mathlib_discrete.h"
 #include "mathlib_pure.h"
 #include "mathlib_complex.h"
+#include "mathlib_vector.h"
 
 #endif // MATHLIB_H
